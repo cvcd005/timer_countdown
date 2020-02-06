@@ -18,6 +18,7 @@ const PrintResult = props => {
   }
   if (startTime === 0) {
     percent = 0;
+    first = undefined;
   } else {
     percent = 100 - Math.round((diff / first) * 100);
     const time = new Date(diff);
