@@ -10,13 +10,12 @@ class Timer extends React.Component {
       time: { all: 0, min: 0, sec: 0, ms: 0 },
       isRunning: false,
       startTime: 0,
-      printTextOnButton: 'Run',
       prev: 0,
     };
   }
 
   changeTime = value => {
-    const { prev, isRunning } = this.state;
+    const { isRunning, prev } = this.state;
     const diff = value - prev;
     if (diff > 150 && isRunning) {
       const { startTime } = this.state;
@@ -40,10 +39,9 @@ class Timer extends React.Component {
       this.setState({
         startTime: Date.now() - time.all,
         isRunning: true,
-        printTextOnButton: 'Pause',
       });
     } else {
-      this.setState({ isRunning: false, printTextOnButton: 'Run', prev: 0 });
+      this.setState({ isRunning: false, prev: 0 });
     }
   };
 
@@ -52,13 +50,12 @@ class Timer extends React.Component {
     this.setState({
       time: { min: 0, sec: 0, ms: 0, all: 0 },
       isRunning: false,
-      printTextOnButton: 'Run',
       prev: 0,
     });
   };
 
   render() {
-    const { time, printTextOnButton } = this.state;
+    const { time, isRunning } = this.state;
     return (
       <div className="timer">
         <ul className="timer__list">
@@ -77,7 +74,7 @@ class Timer extends React.Component {
         </ul>
         <div className="btn-group">
           <Button className="btn--timer" onClick={this.toggleTimer}>
-            {printTextOnButton}
+            {isRunning ? 'Pause' : 'Run'}
           </Button>
           <Button className="btn--timer" onClick={this.resetTimer}>
             Reset
