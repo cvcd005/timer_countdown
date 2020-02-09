@@ -7,24 +7,21 @@ class Timer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      time: { all: 0, min: 0, sec: 0, ms: 0 },
+      time: 0,
       isRunning: false,
-      startTime: 0,
-      prev: 0,
+      pauseTime: 0,
+      timeFromLastAnimate: 0,
     };
   }
 
   changeTime = value => {
-    const { isRunning, prev } = this.state;
-    const diff = value - prev;
+    const { isRunning, timeFromLastAnimate } = this.state;
+    const diff = value - timeFromLastAnimate;
+    // если прошло больше 150 мс
     if (diff > 150 && isRunning) {
-      const { startTime } = this.state;
-      const all = Date.now() - startTime; // получаем разницу между началом и текущим временем
-      const date = new Date(all); // создаем объект дата чтобы получить мин сек и мс
-      const min = date.getMinutes(); // получаем мин
-      const sec = date.getSeconds(); // получаем сек
-      const ms = date.getMilliseconds(); // получаем мс
-      this.setState({ time: { all, min, sec, ms }, prev: value }); // меняем стейт на новый
+      const { pauseTime } = this.state;
+      const time = Date.now() - pauseTime; // получаем текущее время у учетом времени паузы
+      this.setState({ time, timeFromLastAnimate: value }); // меняем стейт на новый
     }
     if (isRunning) {
       requestAnimationFrame(this.changeTime);
@@ -35,41 +32,50 @@ class Timer extends React.Component {
     evt.preventDefault();
     const { isRunning, time } = this.state;
     if (!isRunning) {
-      requestAnimationFrame(this.changeTime);
-      this.setState({
-        startTime: Date.now() - time.all,
-        isRunning: true,
-      });
+      this.setState(
+        {
+          pauseTime: Date.now() - time,
+          isRunning: true,
+        },
+        () => requestAnimationFrame(this.changeTime)
+      );
     } else {
-      this.setState({ isRunning: false, prev: 0 });
+      this.setState({ isRunning: false, timeFromLastAnimate: 0 });
     }
   };
 
   resetTimer = evt => {
     evt.preventDefault();
     this.setState({
-      time: { min: 0, sec: 0, ms: 0, all: 0 },
+      time: 0,
       isRunning: false,
-      prev: 0,
+      timeFromLastAnimate: 0,
     });
   };
 
+  conversionTime = data => (data < 10 ? `0${data}` : data);
+
   render() {
     const { time, isRunning } = this.state;
+    const date = new Date(time); // создаем объект дата чтобы получить мин сек и мс
+    const min = this.conversionTime(date.getMinutes()); // получаем мин
+    const sec = this.conversionTime(date.getSeconds()); // получаем сек
+    const ms = date.getMilliseconds() || '00'; // получаем мс
+
     return (
       <div className="timer">
         <ul className="timer__list">
           <li className="timer__item">
             <span>min</span>
-            <span>{time.min}</span>
+            <span>{min}</span>
           </li>
           <li className="timer__item">
             <span>sec</span>
-            <span>{time.sec}</span>
+            <span>{sec}</span>
           </li>
           <li className="timer__item">
             <span>ms</span>
-            <span>{time.ms}</span>
+            <span>{ms}</span>
           </li>
         </ul>
         <div className="btn-group">
