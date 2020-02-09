@@ -8,7 +8,7 @@ class Timer extends React.Component {
     super(props);
     this.state = {
       time: { all: 0, min: 0, sec: 0, ms: 0 },
-      open: true,
+      isRunning: false,
       startTime: 0,
       printTextOnButton: 'Run',
       prev: 0,
@@ -16,9 +16,9 @@ class Timer extends React.Component {
   }
 
   changeTime = value => {
-    const { prev, open } = this.state;
+    const { prev, isRunning } = this.state;
     const diff = value - prev;
-    if (diff > 150 && !open) {
+    if (diff > 150 && isRunning) {
       const { startTime } = this.state;
       const all = Date.now() - startTime; // получаем разницу между началом и текущим временем
       const date = new Date(all); // создаем объект дата чтобы получить мин сек и мс
@@ -27,23 +27,23 @@ class Timer extends React.Component {
       const ms = date.getMilliseconds(); // получаем мс
       this.setState({ time: { all, min, sec, ms }, prev: value }); // меняем стейт на новый
     }
-    if (!open) {
+    if (isRunning) {
       requestAnimationFrame(this.changeTime);
     }
   };
 
   toggleTimer = evt => {
     evt.preventDefault();
-    const { open, time } = this.state;
-    if (open) {
+    const { isRunning, time } = this.state;
+    if (!isRunning) {
       requestAnimationFrame(this.changeTime);
       this.setState({
         startTime: Date.now() - time.all,
-        open: false,
+        isRunning: true,
         printTextOnButton: 'Pause',
       });
     } else {
-      this.setState({ open: true, printTextOnButton: 'Run', prev: 0 });
+      this.setState({ isRunning: false, printTextOnButton: 'Run', prev: 0 });
     }
   };
 
@@ -51,7 +51,7 @@ class Timer extends React.Component {
     evt.preventDefault();
     this.setState({
       time: { min: 0, sec: 0, ms: 0, all: 0 },
-      open: true,
+      isRunning: false,
       printTextOnButton: 'Run',
       prev: 0,
     });
