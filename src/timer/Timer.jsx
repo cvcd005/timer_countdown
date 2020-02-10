@@ -9,7 +9,7 @@ class Timer extends React.Component {
     this.state = {
       time: 0,
       isRunning: false,
-      pauseTime: 0,
+      startTime: 0,
       timeFromLastAnimate: 0,
     };
   }
@@ -19,8 +19,8 @@ class Timer extends React.Component {
     const diff = value - timeFromLastAnimate;
     // если прошло больше 150 мс
     if (diff > 150 && isRunning) {
-      const { pauseTime } = this.state;
-      const time = Date.now() - pauseTime; // получаем текущее время у учетом времени паузы
+      const { startTime } = this.state;
+      const time = Date.now() - startTime; // получаем текущее время у учетом времени паузы
       this.setState({ time, timeFromLastAnimate: value }); // меняем стейт на новый
     }
     if (isRunning) {
@@ -34,7 +34,7 @@ class Timer extends React.Component {
     if (!isRunning) {
       this.setState(
         {
-          pauseTime: Date.now() - time,
+          startTime: Date.now() - time,
           isRunning: true,
         },
         () => requestAnimationFrame(this.changeTime)
