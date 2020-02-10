@@ -35,7 +35,7 @@ class Countdown extends React.Component {
     } else {
       const audio = new Audio(sound);
       audio.play();
-      this.setState({ ...initialState });
+      this.setState({ ...initialState, time: 0 });
     }
   };
 
