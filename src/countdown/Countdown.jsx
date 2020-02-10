@@ -8,102 +8,84 @@ import sound from '../audio/sound.mp3';
 
 import './countdown.scss';
 
+const initialState = {
+  isRunning: false,
+  isDisable: false,
+  min: 0,
+  sec: 0,
+  startTime: 0,
+};
+
 class Countdown extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      time: 0,
-      startTime: 0,
-      currentTime: 0,
-      close: false,
-      work: false,
-      printTextOnButton: 'Run',
-      min: 0,
-      sec: 0,
-    };
+    this.state = { ...initialState };
   }
 
-  getTime = (min, sec) => {
-    const { close } = this.state;
-    if (!close) {
-      const time = min * 60 + sec;
-      this.setState({ time: time * 1000, min, sec });
-    }
+  setTime = (min, sec) => {
+    const time = min * 60 + sec;
+    this.setState({ time: time * 1000, min, sec });
   };
 
   changeTime = () => {
-    const { startTime, currentTime, work } = this.state;
-    if (startTime > currentTime && work) {
-      this.setState({ currentTime: Date.now() });
-      setTimeout(() => this.changeTime(), 1000);
-    } else if (startTime <= currentTime) {
+    const { startTime } = this.state;
+    if (startTime > Date.now()) {
+      const newtimerId = setTimeout(() => this.changeTime(), 1000);
+      this.setState({ timerId: newtimerId });
+    } else {
       const audio = new Audio(sound);
       audio.play();
-      this.setState({
-        currentTime: 0,
-        startTime: 0,
-        close: false,
-        work: false,
-        time: 0,
-        printTextOnButton: 'Run',
-        min: 0,
-        sec: 0,
-      });
+      this.setState({ ...initialState });
     }
   };
 
-  startCountDown = () => {
-    const { time } = this.state;
-    const currentTime = Date.now();
-    const startTime = currentTime + time;
-
-    this.setState(
-      {
-        close: true,
-        work: true,
-        startTime,
-        currentTime,
-        printTextOnButton: 'Pause',
-      },
-      () => this.changeTime()
-    );
-  };
-
-  toggleCountDown = evt => {
+  toggleCountdown = evt => {
     evt.preventDefault();
-    const { work, startTime, currentTime } = this.state;
-    if (!work) {
-      this.startCountDown();
+    const { isRunning } = this.state;
+    if (!isRunning) {
+      const { time = 0 } = this.state;
+      const currentTime = Date.now();
+      const startTime = currentTime + time;
+
+      if (startTime === currentTime) {
+        return;
+      }
+      this.setState(
+        {
+          isRunning: true,
+          isDisable: true,
+          startTime,
+        },
+        () => this.changeTime()
+      );
     } else {
-      this.setState({ work: false, time: startTime - currentTime, printTextOnButton: 'Run' });
+      const { timerId, startTime } = this.state;
+      clearTimeout(timerId);
+      this.setState({ isRunning: false, time: startTime - Date.now(), timerId: null });
     }
   };
 
-  resetCountDown = evt => {
+  resetCountdown = evt => {
     evt.preventDefault();
-    this.setState({
-      close: false,
-      work: false,
-      startTime: 0,
-      currentTime: 0,
-      time: 0,
-      min: 0,
-      sec: 0,
-      printTextOnButton: 'Run',
-    });
+    const { timerId } = this.state;
+    clearTimeout(timerId);
+    this.setState({ ...initialState, time: 0, timerId: null });
   };
 
   render() {
-    const { close, min, sec, printTextOnButton, startTime, currentTime } = this.state;
+    const { startTime, isRunning, min, sec, isDisable } = this.state;
     return (
       <div className="countdown">
-        <EnterTime getTime={this.getTime} close={close} min={min} sec={sec} />
+        <EnterTime setTime={this.setTime} isDisable={isDisable} min={min} sec={sec} />
         <div className="btn-countdown">
-          <Button onClick={this.toggleCountDown}>{printTextOnButton}</Button>
-          <Button onClick={this.resetCountDown}>Reset</Button>
+          <Button onClick={this.toggleCountdown}>{isRunning ? 'Pause' : 'Run'}</Button>
+          <Button onClick={this.resetCountdown}>Reset</Button>
         </div>
         <br />
-        <PrintResult startTime={startTime} currentTime={currentTime} />
+        <PrintResult
+          startTime={isDisable ? min * 60 + sec : 0}
+          currentTime={isDisable ? startTime - Date.now() : 0}
+        />
       </div>
     );
   }

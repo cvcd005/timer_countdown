@@ -4,8 +4,8 @@ import { Slider, InputNumber } from 'antd';
 
 class EnterTime extends React.Component {
   giveTime = (min, sec) => {
-    const { getTime } = this.props;
-    getTime(min, sec);
+    const { setTime } = this.props;
+    setTime(min, sec);
   };
 
   sliderChange = value => {
@@ -15,28 +15,27 @@ class EnterTime extends React.Component {
   };
 
   minChange = min => {
-    const { sec } = this.props; // получаем секунды из стейта
-    this.giveTime(min, sec);
+    const { sec } = this.props; // получаем секунды из пропсов
+    min > 720 ? this.giveTime(719, 59) : this.giveTime(min, sec); // если ввели больше 720 мин
   };
 
   secChange = sec => {
-    const { min } = this.props; // получаем минуты из стейта
+    const { min } = this.props; // получаем минуты из пропсов
     this.giveTime(min, sec);
   };
 
   render() {
-    const { min, sec } = this.props;
-    const { close } = this.props;
+    const { min, sec, isDisable } = this.props;
     return (
       <div>
         MIN
-        <InputNumber value={min} onChange={this.minChange} disabled={close} max={720} min={0} />
+        <InputNumber value={min} onChange={this.minChange} disabled={isDisable} max={719} min={0} />
         SEC
-        <InputNumber value={sec} onChange={this.secChange} disabled={close} max={59} min={0} />
+        <InputNumber value={sec} onChange={this.secChange} disabled={isDisable} max={59} min={0} />
         <Slider
           value={min * 60 + sec}
           onChange={this.sliderChange}
-          disabled={close}
+          disabled={isDisable}
           step={15}
           min={0}
           max={3600}
@@ -46,18 +45,11 @@ class EnterTime extends React.Component {
   }
 }
 
-EnterTime.defaultProps = {
-  min: 0,
-  sec: 0,
-  close: false,
-};
-
 EnterTime.propTypes = {
   min: PropTypes.number,
   sec: PropTypes.number,
-  close: PropTypes.bool,
-  // eslint-disable-next-line react/require-default-props
-  getTime: PropTypes.func,
+  isDisable: PropTypes.bool,
+  setTime: PropTypes.func,
 };
 
 export default EnterTime;
